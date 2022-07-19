@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="./dist/css/bootstrap.min.css" />
+    <script src="./jquery-3.6.0.js"></script>
+  </head>
+  <body style="padding: 8px 44px">
+    <!-- 添加图书的panel面板 -->
+
+    <div class="panel panel-primary text-center">
+      <div class="panel-heading">
+        <h3 class="panel-title">添加新图书</h3>
+      </div>
+      <div class="panel-body">
+        <form action="" method="POST" class="form-inline" role="form">
+          <div class="form-group input-group">
+            <div class="input-group-addon">书名</div>
+            <input
+              type="text"
+              class="form-control"
+              id="idbook"
+              placeholder="请输入书名"
+            />
+          </div>
+          <div class="form-group input-group">
+            <div class="input-group-addon">作者</div>
+            <input
+              type="email"
+              class="form-control"
+              id="idauthor"
+              placeholder="请输入作者"
+            />
+          </div>
+          <div class="form-group input-group">
+            <div class="input-group-addon">出版社</div>
+            <input
+              type="email"
+              class="form-control"
+              id="idpress"
+              placeholder="请输入出版社"
+            />
+          </div>
+          <button type="submit" class="btn btn-primary" id="btnnn">添加</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 图书的表格 -->
+
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>id</th>
+          <th>书名</th>
+          <th>作者</th>
+          <th>出版社</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="tb"></tbody>
+    </table>
+    <script>
+      // 获取初始数据
+      $(function () {
+        function getbooks() {
+          $.get("http://www.liulongbin.top:3006/api/getbooks", function (res) {
+            if (res.status !== 200) {
+              return alert("获取数据失败");
+            }
+
+            var rows = [];
+            $.each(res.data, function (i, item) {
+              rows.push(
+                "<tr><th>" +
+                  item.id +
+                  "</th><th>" +
+                  item.bookname +
+                  "</th><th>" +
+                  item.author +
+                  "</th><th>" +
+                  item.publisher +
+                  '<th><a class="del" href="#" data-id="' +
+                  item.id +
+                  '">删除</a></th></tr>'
+              );
+              //       rows.push = `<tr>
+              //   <th>${item.id}</th>
+              //   <th>${item.bookname}</th>
+              //   <th>${item.author}</th>
+              //   <th>${item.publisher}</th>
+              //   <th><a href="#">删除</a></th>
+              // </tr>`;
+            });
+
+            $("#tb").empty().append(rows.join(""));
+          });
+        }
+        getbooks();
+        // 删除数据功能
+        $("tbody").on("click", ".del", function () {
+          var id = $(this).attr("data-id");
+          $.get(
+            "http://www.liulongbin.top:3006/api/delbook",
+            { id: id },
+            function (res) {
+              if (res.status != 200) return alert("删除失败");
+              getbooks();
+            }
+          );
+        });
+        // 添加图书功能
+        $("#btnnn").on("click", function () {
+          var bookname = $("#idbook").val();
+          var author = $("#idauthor").val();
+          var publisher = $("#idpress").val();
+          if (
+            bookname.length <= 0 ||
+            author.length <= 0 ||
+            publisher.length <= 0
+          ) {
+            return alert("请输入正确的图书信息");
+          }
+
+          $.post(
+            "http://www.liulongbin.top:3006/api/addbook",
+            { bookname: bookname, author: author, publisher: publisher },
+            function (res) {
+              if (res.status != 201) return alert("添加失败");
+              getbooks();
+              $("#idbook").val("");
+              $("#idauthor").val("");
+              $("#idpress").val("");
+            }
+          );
+        });
+      });
+    </script>
+  </body>
+</html>
